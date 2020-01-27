@@ -19,6 +19,9 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.example.mentors.BeaconsApplication.Companion.CHANNEL_ID
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -68,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         packageManager.takeIf {
             it.missingSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
         }?.also {
-            Toast.makeText(this, "Seu cll é lixo, nao funfa o ble", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Seu Dispositivo não suporta o BLE", Toast.LENGTH_SHORT).show()
             finish()
         }
 
@@ -112,16 +115,19 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setPosition(address: String){
+    fun setPosition(address: String) {
         when (address) {
             "C4:AA:52:6D:EC:C7" -> {
                 beacon_entrada.visibility = GONE
                 beacon_cozinha.visibility = VISIBLE
+                sendNotification("Você está na Cozinha!")
 
             }
-            "CE:F9:33:55:E1:45" ->{
+            "CE:F9:33:55:E1:45" -> {
                 beacon_cozinha.visibility = GONE
                 beacon_entrada.visibility = VISIBLE
+                sendNotification("Bem Vindo!")
+
             }
         }
     }
@@ -133,17 +139,36 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         when (requestCode) {
             PERMISSION_REQUEST_COARSE_LOCATION -> {
                 when (PackageManager.PERMISSION_GRANTED) {
                     grantResults[0] -> {
                         // Location permission granted
                     }
-                    else -> { }
+                    else -> {
+                    }
                 }
             }
         }
     }
 
+    fun sendNotification(mensagem: String) {
+        val maneger = NotificationManagerCompat.from(this)
+        val notification: NotificationCompat.Builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        notification.setContentTitle("Mentors").setContentText(mensagem)
+        notification.setTicker("Nova notificação")
+            .setAutoCancel(true)
+            .setColor(resources.getColor(R.color.colorBlack))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setSmallIcon(R.mipmap.ic_launcher_round)
+            .build()
+        maneger.notify(1, notification.build())
+
+    }
 }
